@@ -1,0 +1,576 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using helpp__no_gui_;
+using Microsoft.VisualBasic;
+
+namespace traning
+{
+    class Program
+    {
+
+        static void Main(string[] args)
+        {
+            Post addTask = null;
+            Account rightAcc = null;
+            Account messager2user = null;
+            ChatRoom rightChat = null;
+            Account otherAcc = null;
+            //all the lists
+
+            List<string> usernameList = new List<string>();
+            List<string> passwordList = new List<string>();
+
+            List<object> accountList = new List<object>();
+            List<object> userFeedList = new List<object>();
+
+
+
+            //all the variables
+
+            //ints
+
+            int indexUsername = 0;
+            int indexPassword = 0;
+            int maxTasksPerUser = 1;
+            int usersActiveTasks = 0;
+            int chatAmount = 0;
+            int timesprinted;
+            int isItPrinted = 0;
+            
+            //strings
+
+            string userLoginPassword = "";
+            string userLoginUsername = "";
+            string userUsername = "";
+            string userPassword = "";
+            string logoutQ = "";
+            string userLocation = "";
+            string lowerUserLocation = "";
+            string chatName2 = "";
+            string chatName3 = "";
+            string newMessage = "";
+            //bools
+
+            bool tryingLogin = false;
+            bool correctLogin = false;
+            bool containsInt = false;
+            bool chatting = true;
+
+        //register
+
+        start:
+            while (!tryingLogin)
+            {
+                Console.WriteLine("Would you like to register or log in? ");
+                string firstQ = Console.ReadLine();
+
+                if (firstQ == "register" || firstQ == "Register")
+
+                {
+                    //ask user for input
+
+                    Console.Write("Set a username: ");
+                    userUsername = Console.ReadLine();
+
+                    Console.Write("Set a password: ");
+                    userPassword = Console.ReadLine();
+
+                    Console.Write("Set a location: ");
+                    userLocation = Console.ReadLine();
+                    lowerUserLocation = userLocation.ToLower();
+
+                    containsInt = userPassword.Any(c => char.IsDigit(c));
+
+                    //check if username is viable
+
+                    if (usernameList.Contains(userUsername) || passwordList.Contains(userPassword))
+                    {
+                        Console.Clear();
+                        Console.WriteLine("That username/password is already in use, try again.");
+                        continue;
+                    }
+
+                    else if (userUsername.Length > 16 || userUsername.Length < 6)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Username is too short/long, try again (min 6 max 16 characters.)");
+                        continue;
+                    }
+
+                    else if (!containsInt)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Password must include a number.");
+                        continue;
+                    }
+
+                    else if (userPassword.Length < 8 || userPassword.Length > 16)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("Password is too short/long, try again (min 6 max 16 characters.) ");
+                        continue;
+                    }
+
+                    usernameList.Add(userUsername);
+                    passwordList.Add(userPassword);
+
+                    //make and add account to list
+
+                    Account newAcc = new Account();
+
+                    newAcc.username = userUsername;
+                    newAcc.password = userPassword;
+                    newAcc.location = lowerUserLocation;
+
+
+                    accountList.Add(newAcc);
+
+                   
+                    Console.Clear();
+                    Console.WriteLine("Successfully registered!");
+
+
+                    //login
+
+                }
+                else if (firstQ == "log in" || firstQ == "login" || firstQ == "Login" || firstQ == "Log in")
+
+                {
+
+                    tryingLogin = true;
+                    correctLogin = false;
+
+                    while (!correctLogin)
+                    {
+                        Console.Write("Login with set username: ");
+                        userLoginUsername = Console.ReadLine();
+
+                        Console.Write("Login with set password: ");
+                        userLoginPassword = Console.ReadLine();
+
+
+                        //check if username and password is registered
+
+                        if (usernameList.Contains(userLoginUsername) && passwordList.Contains(userLoginPassword))
+
+                        {
+                            indexUsername = usernameList.IndexOf(userLoginUsername);
+                            indexPassword = passwordList.IndexOf(userLoginPassword);
+
+
+                            //check if the password and username is at the same index
+
+                            if (indexUsername == indexPassword)
+                            {
+                                correctLogin = true;
+                                Console.Clear();
+                                Console.WriteLine("Login successful! You are now logged in as: " + userLoginUsername + ".");
+
+
+                                //get the right account that is logged in to.
+
+                                rightAcc = (Account)accountList[indexUsername];
+
+                                //Would user like to log out
+
+                                Console.Write("Would you like to log out? yes or no: ");
+                                logoutQ = Console.ReadLine();
+
+
+                                if (logoutQ == "yes")
+                                {
+                                    Console.Clear();
+                                    tryingLogin = false;
+
+                                }
+
+                                else
+                                {
+                                    goto afterLogin;
+                                }
+
+
+                            }
+                            else
+                            {
+                                Console.Clear();
+                                Console.WriteLine("Login failed, try again.");
+                                tryingLogin = false;
+                                goto start;
+
+                            }
+
+                        }
+                        else
+                        {
+                            Console.Clear();
+                            Console.WriteLine("Login failed, try again.");
+                            tryingLogin = false;
+                            goto start;
+
+                        }
+                    }
+
+                }
+
+                else
+                {
+                    Console.Clear();
+                    Console.WriteLine("Please write register or login.");
+                    Console.WriteLine("                               ");
+                }
+
+            }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        afterLogin:
+            {
+                Console.Clear();
+                if (rightAcc.userMessageBox.Count != rightAcc.countBeforeLogout)
+                {
+                    newMessage = "- New message!";
+                }
+                else if (rightAcc.userMessageBox.Count == rightAcc.countBeforeLogout)
+                {
+                    newMessage = " ";
+                }
+                Console.Write(" What would you like to do? \n\n 1) Make a post \n 2) See feed \n 3) See profile \n 4) See messagebox " + newMessage +  "\n 5) Log out \n Answer: ");
+                string secondQi = Console.ReadLine();
+                int secondQ = Int32.Parse(secondQi);
+
+                chatting = true;
+                usersActiveTasks = rightAcc.userTaskList.Count;
+                isItPrinted = 0;
+
+                if (secondQ == 1) ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                {
+                    Post newPost = new Post();
+
+                    Console.Clear();
+                    Console.WriteLine("Make a post");
+                    Console.WriteLine("                               ");
+                    Console.WriteLine("Describe work: ");
+                    newPost.workdescription = Console.ReadLine();
+
+                    Console.Write("Amount of money for work (USD): ");
+                    newPost.jobCost = Convert.ToInt32(Console.ReadLine());
+
+                    Console.Write("How long will the task take (minutes): ");
+                    newPost.timeForJob = Convert.ToInt32(Console.ReadLine());
+
+                    newPost.poster = rightAcc.username;
+
+                    Console.WriteLine(newPost.endborder);
+
+                    newPost.userLocation = rightAcc.location;
+
+                    userFeedList.Add(newPost);
+                    rightAcc.userPosts.Add(newPost);
+
+                    goto afterLogin;
+
+                }
+
+                else if (secondQ == 2) //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                {
+                    Console.Clear();
+                    int maxprints = userFeedList.Count;
+                    userFeedList.Reverse();
+
+                    if (maxprints == 0)
+                    {
+                        Console.WriteLine("You have no current posts in your area");
+                        Console.ReadLine();
+                        userFeedList.Reverse();
+                        goto afterLogin;
+                    }
+                    for (timesprinted = 0; timesprinted < maxprints; timesprinted++)
+                    {
+
+                        if (rightAcc.location == ((Post)userFeedList[timesprinted]).userLocation && rightAcc.username != ((Post)userFeedList[timesprinted]).poster && maxprints != 0)
+                        {
+
+                            Console.WriteLine("Poster: " + ((Post)userFeedList[timesprinted]).poster + "\n" + "Task: " +
+                        ((Post)userFeedList[timesprinted]).workdescription + "\n" + "Reward: " +
+                        ((Post)userFeedList[timesprinted]).jobCost +
+                        " USD" + "\n" + "Approximate time: " + ((Post)userFeedList[timesprinted]).timeForJob + " minute(s)" + "\n" +
+                        ((Post)userFeedList[timesprinted]).endborder + "                                          ");
+                            isItPrinted++;
+                        }
+
+
+                    }
+
+                    if (isItPrinted == 0)
+                    {
+                        Console.WriteLine("You have no current posts in your area");
+                        Console.ReadLine();
+                        userFeedList.Reverse();
+                        goto afterLogin;
+                    }
+                    //ADD TASK
+
+
+                    Console.Write("Would you like to do any task? Write 0 if not any): ");
+
+                    int feedAnswer = Convert.ToInt32(Console.ReadLine());
+
+                    int realFeedAnswer = feedAnswer - 1;
+                    if (realFeedAnswer == -1)
+                    {
+
+                        goto afterLogin;
+                    }
+
+                    addTask = (Post)userFeedList[realFeedAnswer];
+
+                    if (usersActiveTasks > maxTasksPerUser)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("You already have maximum active tasks.");
+                        Console.ReadLine();
+                        userFeedList.Reverse();
+                        goto afterLogin;
+                    }
+                    else if (rightAcc.userTaskList.Contains(addTask))
+                    {
+                        Console.Clear();
+                        Console.WriteLine("you have already activated that task.");
+                        Console.ReadLine();
+                        userFeedList.Reverse();
+                        goto afterLogin;
+                    }
+                    else if (addTask.poster == rightAcc.username)
+                    {
+                        Console.Clear();
+                        Console.WriteLine("you cant add your own task.");
+                        Console.ReadLine();
+                        userFeedList.Reverse();
+                        goto afterLogin;
+                    }
+
+                    addTask.isPostActivated = true;
+
+                    if (addTask.isPostActivated)
+                    {
+                        addTask.postStatus = "activated";
+                    }
+                    else if (!addTask.isPostActivated)
+                    {
+                        addTask.postStatus = "not Activated";
+                    }
+
+                    rightAcc.userTaskList.Add(addTask);
+
+                    string rightPoster = addTask.poster;
+                    int indexPoster = usernameList.IndexOf(rightPoster);
+                    messager2user = (Account)accountList[indexPoster];
+                    chatAmount = rightAcc.userChatRoomList.Count;
+                    userFeedList.Remove(addTask);
+
+
+                    ChatRoom newChat = new ChatRoom();
+                    newChat.messager1 = rightAcc.username;
+                    newChat.messager2 = addTask.poster;
+                    newChat.chatName = addTask.workdescription;
+
+                    rightAcc.userChatRoomList.Add(newChat);
+                    messager2user.userChatRoomList.Add(newChat);
+
+                    userFeedList.Reverse();
+                    goto afterLogin;
+
+
+
+                }
+                else if (secondQ == 3) //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                {
+                    Console.Clear();
+                    Console.WriteLine("You are currently logged in as: " + rightAcc.username + "\n" +
+                        "Your password is set to: " + rightAcc.password + "\n" + "your location is set to: " + rightAcc.location);
+
+                    int totalPostsMadeByUser = rightAcc.userPosts.Count;
+
+
+                    Console.WriteLine("                             ");
+                    Console.WriteLine("User's last post");
+                    Console.WriteLine("                             ");
+
+                    if (totalPostsMadeByUser != 0)
+                    {
+                        Console.WriteLine("Poster: " + ((Post)rightAcc.userPosts.Last()).poster +
+                            "\n" + "Status: " + ((Post)rightAcc.userPosts.Last()).postStatus + "\n" + "Task: " +
+                           ((Post)rightAcc.userPosts.Last()).workdescription + "\n" + "Reward: " +
+                           ((Post)rightAcc.userPosts.Last()).jobCost + " USD" + "\n" + "Approximate time: "
+                           + ((Post)rightAcc.userPosts.Last()).timeForJob + " minute(s)" + "\n" +
+                           ((Post)rightAcc.userPosts.Last()).endborder + "                                          ");
+                    }
+
+                    else if (totalPostsMadeByUser == 0)
+                    {
+                        Console.WriteLine("This user has not made any posts yet.");
+                    }
+
+
+                    Console.WriteLine("                             ");
+                    Console.WriteLine("User's active task(s)");
+                    Console.WriteLine("                             ");
+                    usersActiveTasks = rightAcc.userTaskList.Count;
+
+                    if (usersActiveTasks != 0)
+                    {
+
+                        for (timesprinted = 0; timesprinted < usersActiveTasks; timesprinted++)
+                        {
+
+                            Console.WriteLine("Poster: " + ((Post)rightAcc.userTaskList[timesprinted]).poster + "\n"  + "Task: " +
+                            ((Post)rightAcc.userTaskList[timesprinted]).workdescription + "\n" + "Reward: " +
+                            ((Post)rightAcc.userTaskList[timesprinted]).jobCost +
+                            " USD" + "\n" + "Approximate time: " + ((Post)rightAcc.userTaskList[timesprinted]).timeForJob + " minute(s)" + "\n" +
+                            ((Post)rightAcc.userTaskList[timesprinted]).endborder + "                                          ");
+
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("This user has not got any active tasks");
+                    }
+
+
+                    Console.ReadLine();
+                    goto afterLogin;
+
+                }
+                else if (secondQ == 4) ///////////////////////////////////////////////////////////////////////////////////////////////////
+                {
+                    Console.Clear();
+                    chatAmount = rightAcc.userChatRoomList.Count;
+                    if (rightAcc.userChatRoomList.Count != 0)
+                    {
+                        rightAcc.userChatRoomList.Reverse();
+                        userFeedList.Reverse();
+                        for (timesprinted = 0; timesprinted < chatAmount; timesprinted++)
+                        {
+                            if (((ChatRoom)rightAcc.userChatRoomList[timesprinted]).messager1 == rightAcc.username)
+                            {
+                                chatName2 = ((ChatRoom)rightAcc.userChatRoomList[timesprinted]).chatName + " - " + ((ChatRoom)rightAcc.userChatRoomList[timesprinted]).messager2;
+
+                            }
+                            else
+                            {
+                                chatName2 = ((ChatRoom)rightAcc.userChatRoomList[timesprinted]).chatName + " - " + ((ChatRoom)rightAcc.userChatRoomList[timesprinted]).messager1;
+                            }
+
+                            Console.WriteLine(chatName2);
+                        }
+
+                        Console.Write("would you like to chat? 1 - " + chatAmount + ", 0 if you want to go back: ");
+                        rightAcc.countBeforeLogout = rightAcc.userMessageBox.Count();
+                        int chatQAnswer = Convert.ToInt32(Console.ReadLine());
+                        int realChatQAnswer = chatQAnswer - 1;
+                        Console.Clear();
+                        rightAcc.userChatRoomList.Reverse();
+                        if (realChatQAnswer == -1)
+                        {
+                            chatAmount = rightAcc.userChatRoomList.Count;
+                            userFeedList.Reverse();
+                            goto afterLogin;
+                        }
+
+
+                        rightChat = (ChatRoom)rightAcc.userChatRoomList[realChatQAnswer];
+
+
+                        int rightChatMessageAmount = rightChat.fullChatList.Count;
+
+
+                    chat:
+                        rightChatMessageAmount = rightChat.fullChatList.Count;
+
+                        if (rightChat.messager1 == rightAcc.username)
+                        {
+                            chatName3 = rightChat.chatName + " - " + rightChat.messager2;
+                            int indexOfMessager = usernameList.IndexOf(rightChat.messager2);
+                            otherAcc = (Account)accountList[indexOfMessager];
+
+
+                        }
+
+                        else if (rightChat.messager2 == rightAcc.username)
+                        {
+                            chatName3 = rightChat.chatName + " - " + rightChat.messager1;
+                            int indexOfMessager = usernameList.IndexOf(rightChat.messager1);
+                            otherAcc = (Account)accountList[indexOfMessager];
+                        }
+
+                        if (rightChatMessageAmount > 0)
+                        {
+
+                            Console.WriteLine("       " + chatName3);
+                            Console.WriteLine("---------------------");
+
+                            for (timesprinted = 0; timesprinted < rightChatMessageAmount; timesprinted++)
+                            {
+                                Console.WriteLine(rightChat.fullChatList[timesprinted]);
+                                Console.WriteLine("                   ");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Start the conversation!");
+                        }
+
+                        while (chatting)
+                        {
+                            Console.WriteLine("Write message (leave to exit): ");
+                            string chatMessage = Console.ReadLine();
+
+
+                            if (chatMessage == "leave")
+                            {
+                                chatting = false;
+                            }
+                            else if (chatMessage != "leave")
+                            {
+                                rightChat.fullChatList.Add(rightAcc.username + ": " + chatMessage);
+                                otherAcc.userMessageBox.Add(chatMessage);
+                                Console.Clear();
+                                goto chat;
+                            }
+
+
+
+
+                        }
+
+                        chatAmount = rightAcc.userChatRoomList.Count;
+                        rightChatMessageAmount = rightChat.fullChatList.Count;
+                        userFeedList.Reverse();
+                        goto afterLogin;
+
+                        
+                    }
+                    else
+                    {
+                        Console.Clear();
+                        Console.WriteLine("You have not got any chats");
+                        Console.ReadLine();
+                        goto afterLogin;
+                    }
+
+                }
+                else if (secondQ == 5) /////////////////////////////////////////////////////////////////////////////////////////////////////////
+                {
+                    Console.Clear();
+                    tryingLogin = false;
+                    goto start;
+                    
+                }
+
+            }
+
+        }
+    }
+}
