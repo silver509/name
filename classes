@@ -1,0 +1,39 @@
+using System;
+using System.Collections.Generic;
+using System.IO.MemoryMappedFiles;
+using System.Text;
+
+namespace helpp__no_gui_
+{
+    public class Account
+    {
+        public string username;
+        public string password;
+        public string location;
+        public List<object> userPosts = new List<object>();
+        public List<object> userTaskList = new List<object>();
+        public List<string> userMessageBox = new List<string>();
+        public List<object> userChatRoomList = new List<object>();
+        public int countBeforeLogout;
+    }
+    public class Post
+    {
+        public string workdescription;
+        public int jobCost;
+        public string poster;
+        public string endborder = "--------------------";
+        public int timeForJob;
+        public string userLocation;
+        public string postStatus = "not activated";
+        public bool isPostActivated = false;
+
+    }
+    public class ChatRoom
+    {
+        public string chatName;
+        public string messager1;
+        public string messager2;
+        public List<string> fullChatList = new List<string>();
+       
+    }
+}
